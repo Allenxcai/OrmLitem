@@ -23,6 +23,7 @@ public class OkHttpAgent {
 
     private static final String TAG = "axc-OkHttpAgent";
 
+    private static OnGetNetWorkDataListener mlistener;
 
     private OkHttpClient mClient;
 
@@ -48,19 +49,22 @@ public class OkHttpAgent {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.d(TAG, "onFailure() called with: call = [" + call + "], e = [" + e + "]");
+                mlistener.onFail(-1, e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 Log.d(TAG, "onResponse() called with: call = [" + call + "], response = [" + response + "]");
-//                int code = response.code();
+                int code = response.code();
 //                Headers headers = response.headers();
 //                String content = response.body().string();
 //                final StringBuilder buf = new StringBuilder();
 //                buf.append("code: " + code);
 //                buf.append("\nHeaders: \n" + headers);
 //                buf.append("\nbody: \n" + content);
-                retStr = response.body().string();
+                retStr = DataUtil.decode(response.body().string());
+                mlistener.onSuccess(code, retStr);
+
 
             }
         });
@@ -87,7 +91,7 @@ public class OkHttpAgent {
                     Response response = call.execute();
 
                     if (response.isSuccessful()) {
-                        retStr = response.body().string();
+                        retStr = DataUtil.decode(response.body().string());
                     }
 
                 } catch (IOException e) {
@@ -165,6 +169,36 @@ public class OkHttpAgent {
 
     public void setRetStr(String retStr) {
         this.retStr = retStr;
+    }
+
+    public static void SetGetNetWorkDataListener(OnGetNetWorkDataListener listener) {
+        mlistener = listener;
+    }
+
+
+    public interface OnGetNetWorkDataListener {
+
+        void onStart();
+
+        void onSuccess(int code, String NetRawData);
+
+        void onFail(int code, String message);
+
+        void onProgress(int progress);
+
+        public abstract class SimpleGetNetWorkDataListener implements OnGetNetWorkDataListener {
+            @Override
+            public void onStart() {
+
+            }
+
+            @Override
+            public void onProgress(int progress) {
+
+            }
+        }
+
+
     }
 
 }

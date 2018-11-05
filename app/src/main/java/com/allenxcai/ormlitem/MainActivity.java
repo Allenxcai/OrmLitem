@@ -9,6 +9,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.allenxcai.bean.Article;
+import com.allenxcai.biz.ArticleInstance;
+import com.allenxcai.util.DataUtil;
 import com.allenxcai.util.OkHttpAgent;
 
 import java.io.IOException;
@@ -25,29 +28,36 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final int currentArticle = 1;
-    Button btn_last,btn_favorite,btn_next;
-    TextView tv_title,tv_author,tv_articleDetail,tv_myFavorite;
+    Button btn_last, btn_favorite, btn_next;
+    TextView tv_title, tv_author, tv_articleDetail, tv_myFavorite;
     ImageView iv_ads;
 
-    private final OkHttpClient mClient = new OkHttpClient();
+    private ArticleInstance articleInstance;
+    private Article article;
+    private int curPage=1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initViews();
+        articleInstance = new ArticleInstance();
+        articleInstance.getList(1, 30);
+
+
         getAds();
+
+        getArticle(curPage);
     }
 
     private void initViews() {
-        btn_last =findViewById(R.id.btn_last);
-        btn_favorite =findViewById(R.id.btn_favorite);
-        btn_next =findViewById(R.id.btn_next);
+        btn_last = findViewById(R.id.btn_last);
+        btn_favorite = findViewById(R.id.btn_favorite);
+        btn_next = findViewById(R.id.btn_next);
         tv_title = findViewById(R.id.tv_title);
         tv_articleDetail = findViewById(R.id.tv_articleDetail);
         tv_author = findViewById(R.id.tv_author);
-        tv_myFavorite=findViewById(R.id.tv_myFavorite);
+        tv_myFavorite = findViewById(R.id.tv_myFavorite);
 
     }
 
@@ -58,10 +68,13 @@ public class MainActivity extends AppCompatActivity {
         switch (view.getId()) {
 
             case R.id.btn_last:
-                getArticle(currentArticle - 1);
+                getArticle(curPage - 1);
+                curPage=(curPage-1<=0)? 30:curPage-1;
+
                 break;
             case R.id.btn_next:
-                getArticle(currentArticle + 1);
+                getArticle(curPage + 1);
+                curPage=(curPage+1==30)? 1:curPage+1;
 
                 break;
             case R.id.btn_favorite:
@@ -78,15 +91,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getArticle(int page) {
+        article = articleInstance.get(page);
 
-
-        for (int i = 0; i <10 ; i++) {
-
-            ;
-
-        }
-
-        return null;
+        tv_author.setText(article.getAuthor());
+        tv_articleDetail.setText(article.getContent());
+        tv_title.setText(article.getTitle());
 
     }
 
