@@ -79,6 +79,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void getArticle(int page) {
 
+
+        return null;
+
     }
 
     private void getAds() {
