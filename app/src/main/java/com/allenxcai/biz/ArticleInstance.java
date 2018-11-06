@@ -1,5 +1,7 @@
 package com.allenxcai.biz;
 
+import android.util.Log;
+
 import com.allenxcai.bean.Article;
 import com.allenxcai.util.OkHttpAgent;
 
@@ -17,11 +19,16 @@ import java.util.List;
  */
 public class ArticleInstance {
 
+    private static final String TAG = "ArticleInstance-axc";
     private Article article;
-    private List<Article> articleList;
-    private int num=0;
-    OkHttpAgent okHttpAgent;
+    private volatile List<Article> articleList;
 
+    OkHttpAgent okHttpAgent;
+    private static ArticleInstance.OnGetInstance mlistener;
+
+    public static void setMlistener(OnGetInstance mlistener) {
+        ArticleInstance.mlistener = mlistener;
+    }
 
     public ArticleInstance() {
         articleList = new ArrayList<>();
@@ -38,17 +45,26 @@ public class ArticleInstance {
                     articleTemp.setContent(detail.getString("content"));
                     articleTemp.setAuthor(detail.getString("author"));
                     articleTemp.setTitle(detail.getString("title"));
-                    articleTemp.setMsg(detail.getString("msg"));
+                    //articleTemp.setMsg(detail.getString("msg"));
                 } catch (
                         JSONException e) {
                     e.printStackTrace();
                 }
 
-                articleList.add(articleTemp);
+                if (code == 200)
+                    articleList.add(articleTemp);
+                else
+                    article = articleTemp;
+
+
+                mlistener.onSuccess(code); //notice UI
+
+
             }
 
             @Override
             public void onFail(int code, String message) {
+                Log.d(TAG, "onFail: ");
 
             }
         });
@@ -74,33 +90,19 @@ public class ArticleInstance {
 
     public Article get(int id) {
 
-        Article articleTemp;
+        Article articleTemp = null;
 
-        if (articleList.size() > id) {
+        if (articleList.size() > 0 && articleList.get(id - 1).getStatus() != 0) {
+
             articleTemp = articleList.get(id - 1);
+            Log.d(TAG, "get: xxxxxxx");
+
+            mlistener.onSuccess(100); //notice UI
+
         } else {
+            Log.d(TAG, "get: xxxxxyyyyyy" + id);
 
-            String content = okHttpAgent.get("http://www.imooc.com/api/teacher?type=3&cid=" + id);
-            articleTemp = new Article();
-
-            if (content != null) {
-
-                try {
-                    JSONObject jsonObject = new JSONObject(content);
-                    articleTemp.setStatus(jsonObject.getInt("status"));
-                    JSONObject detail = jsonObject.getJSONObject("data");
-                    articleTemp.setContent(detail.getString("content"));
-                    articleTemp.setAuthor(detail.getString("author"));
-                    articleTemp.setTitle(detail.getString("title"));
-                    articleTemp.setMsg(detail.getString("msg"));
-                } catch (
-                        JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-            }
-
+            okHttpAgent.get("http://www.imooc.com/api/teacher?type=3&cid=" + id);
 
         }
 
@@ -117,6 +119,26 @@ public class ArticleInstance {
 
         }
         return articleList;
+
+    }
+
+
+    public interface OnGetInstance {
+
+
+        void onSuccess(int code);
+
+        void onFail(int code, String message);
+
+
+        public abstract class SimpleOnGetInstance implements OnGetInstance {
+
+            @Override
+            public void onFail(int code, String message) {
+
+            }
+        }
+
 
     }
 }

@@ -28,6 +28,11 @@ public class OkHttpAgent {
     private OkHttpClient mClient;
 
     private String retStr;
+    public volatile int status;
+    public static int ErrFailed = 1;
+    public static int ErrPassed = 0;
+    public static int ErrUnknown = -1;
+
 
     public OkHttpAgent() {
         this.mClient = new OkHttpClient();
@@ -35,6 +40,8 @@ public class OkHttpAgent {
 
 
     public String response(final String urlstr) {
+
+        status = ErrUnknown;
         Request.Builder builder = new Request.Builder();
         builder.url(urlstr);
 
@@ -49,12 +56,14 @@ public class OkHttpAgent {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.d(TAG, "onFailure() called with: call = [" + call + "], e = [" + e + "]");
+                status = ErrFailed;
                 mlistener.onFail(-1, e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 Log.d(TAG, "onResponse() called with: call = [" + call + "], response = [" + response + "]");
+                status = ErrPassed;
                 int code = response.code();
 //                Headers headers = response.headers();
 //                String content = response.body().string();
@@ -63,7 +72,7 @@ public class OkHttpAgent {
 //                buf.append("\nHeaders: \n" + headers);
 //                buf.append("\nbody: \n" + content);
                 retStr = DataUtil.decode(response.body().string());
-                mlistener.onSuccess(code, retStr);
+                mlistener.onSuccess(200, retStr);
 
 
             }
@@ -75,7 +84,7 @@ public class OkHttpAgent {
     public String get(final String urlstr) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         retStr = null;
-
+        status = ErrUnknown;
         executor.submit(new Runnable() {
             @Override
             public void run() {
@@ -92,6 +101,10 @@ public class OkHttpAgent {
 
                     if (response.isSuccessful()) {
                         retStr = DataUtil.decode(response.body().string());
+                        mlistener.onSuccess(100, retStr);
+                        status = ErrPassed;
+                    } else {
+                        status = ErrFailed;
                     }
 
                 } catch (IOException e) {
@@ -173,6 +186,14 @@ public class OkHttpAgent {
 
     public static void SetGetNetWorkDataListener(OnGetNetWorkDataListener listener) {
         mlistener = listener;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 
 

@@ -34,20 +34,43 @@ public class MainActivity extends AppCompatActivity {
 
     private ArticleInstance articleInstance;
     private Article article;
-    private int curPage=1;
+    private int curPage = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initViews();
+        initEvent();
+
+
         articleInstance = new ArticleInstance();
+        getArticle(curPage);
+
+
         articleInstance.getList(1, 30);
-
-
         getAds();
 
-        getArticle(curPage);
+
+    }
+
+    private void initEvent() {
+        articleInstance.setMlistener(new ArticleInstance.OnGetInstance.SimpleOnGetInstance() {
+
+            @Override
+            public void onSuccess(int code) {
+
+                if (code == 100) {
+
+                    article = articleInstance.getArticle();
+                    onGetResult();
+                }
+
+
+            }
+        });
+
+
     }
 
     private void initViews() {
@@ -68,13 +91,16 @@ public class MainActivity extends AppCompatActivity {
         switch (view.getId()) {
 
             case R.id.btn_last:
-                getArticle(curPage - 1);
-                curPage=(curPage-1<=0)? 30:curPage-1;
+                curPage = (curPage <= 1) ? 30 : curPage - 1;
+                getArticle(curPage);
+
 
                 break;
             case R.id.btn_next:
-                getArticle(curPage + 1);
-                curPage=(curPage+1==30)? 1:curPage+1;
+
+                curPage = (curPage == 30) ? 1 : curPage + 1;
+                getArticle(curPage);
+
 
                 break;
             case R.id.btn_favorite:
@@ -91,15 +117,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getArticle(int page) {
-        article = articleInstance.get(page);
+
+
+        articleInstance.get(page);
+
+
+    }
+
+    private void onGetResult() {
 
         tv_author.setText(article.getAuthor());
         tv_articleDetail.setText(article.getContent());
         tv_title.setText(article.getTitle());
-
     }
 
     private void getAds() {
+
     }
 
     private void addToMyFavorite() {
