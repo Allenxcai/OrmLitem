@@ -95,7 +95,9 @@ public class ArticleInstance {
         if (articleList.size() > 0 && articleList.get(id - 1).getStatus() != 0) {
 
             articleTemp = articleList.get(id - 1);
+            article = articleTemp;
             Log.d(TAG, "get: xxxxxxx");
+
 
             mlistener.onSuccess(100); //notice UI
 
@@ -139,6 +141,22 @@ public class ArticleInstance {
             }
         }
 
+
+    }
+
+
+    @Override
+    public String toString() {
+
+        String ret="";
+
+        for (int i = 0; i < articleList.size(); i++) {
+
+            ret=articleList.get(i).getTitle()+ret;
+
+        }
+
+        return ret;
 
     }
 }

@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     Button btn_last, btn_favorite, btn_next;
     TextView tv_title, tv_author, tv_articleDetail, tv_myFavorite;
     ImageView iv_ads;
+    private static final String TAG = "MainActivity";
 
     private ArticleInstance articleInstance;
     private Article article;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         articleInstance.getList(1, 30);
+        
         getAds();
 
 
@@ -64,6 +66,12 @@ public class MainActivity extends AppCompatActivity {
 
                     article = articleInstance.getArticle();
                     onGetResult();
+                }
+                
+                if(code ==200)
+                {
+
+                    Log.d(TAG, "onSuccess: zzzzzz articleInstance size:"+articleInstance.getArticleList().size()+":"+articleInstance.toString());
                 }
 
 
