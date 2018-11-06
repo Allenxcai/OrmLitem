@@ -80,6 +80,12 @@ public class MainActivity extends AppCompatActivity {
     private void getArticle(int page) {
 
 
+        for (int i = 0; i <10 ; i++) {
+
+            ;
+
+        }
+
         return null;
 
     }
