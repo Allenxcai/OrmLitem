@@ -2,6 +2,7 @@
 
 buildscript {
     repositories {
+        maven {url 'http://10.203.70.140:9090/repository/fxn-android-public/'}
         google()
         jcenter()
         
@@ -16,6 +17,7 @@ buildscript {
 
 allprojects {
     repositories {
+        maven {url 'http://10.203.70.140:9090/repository/fxn-android-public/'}
         google()
         jcenter()
         

@@ -1,5 +1,7 @@
 package com.allenxcai.util;
 
+import android.content.Context;
+
 /**
  * Project:OrmLitem
  * Author:Allenxcai
@@ -7,4 +9,7 @@ package com.allenxcai.util;
  * Description:
  */
 public class PicassoAgent {
+
+    private Context mContext;
+
 }

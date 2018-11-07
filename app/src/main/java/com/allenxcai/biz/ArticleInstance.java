@@ -19,9 +19,9 @@ import java.util.List;
  */
 public class ArticleInstance {
 
-    private static final String TAG = "ArticleInstance-axc";
-    private Article article;
-    private volatile List<Article> articleList;
+    private static final String        TAG = "ArticleInstance-axc";
+    private              Article       article;
+    private              List<Article> articleList;
 
     OkHttpAgent okHttpAgent;
     private static ArticleInstance.OnGetInstance mlistener;
@@ -35,7 +35,8 @@ public class ArticleInstance {
         okHttpAgent = new OkHttpAgent();
         okHttpAgent.SetGetNetWorkDataListener(new OkHttpAgent.OnGetNetWorkDataListener.SimpleGetNetWorkDataListener() {
             @Override
-            public void onSuccess(int code, String NetRawData) {
+            public void onSuccess(int code, String NetRawData,int sequence) {
+
 
                 Article articleTemp = new Article();
                 try {
@@ -44,20 +45,17 @@ public class ArticleInstance {
                     JSONObject detail = jsonObject.getJSONObject("data");
                     articleTemp.setContent(detail.getString("content"));
                     articleTemp.setAuthor(detail.getString("author"));
-                    articleTemp.setTitle(detail.getString("title"));
+                    articleTemp.setTitle(sequence+"."+detail.getString("title"));
                     //articleTemp.setMsg(detail.getString("msg"));
                 } catch (
                         JSONException e) {
                     e.printStackTrace();
                 }
 
-                if (code == 200)
-                    articleList.add(articleTemp);
-                else
-                    article = articleTemp;
 
+                updateArticle(code, articleTemp,sequence);
 
-                mlistener.onSuccess(code); //notice UI
+                mlistener.onSuccess(code,sequence); //notice UI
 
 
             }
@@ -65,10 +63,19 @@ public class ArticleInstance {
             @Override
             public void onFail(int code, String message) {
                 Log.d(TAG, "onFail: ");
-
             }
         });
 
+    }
+
+    private synchronized void updateArticle(int code, Article articleTemp,int sequence) {
+        if (code == 200) {
+            article = articleTemp;
+            Log.d(TAG, "updateArticle id: "+sequence);
+            //articleList.add(articleTemp);
+            articleList.set(sequence-1,articleTemp);
+        } else
+            article = articleTemp;
     }
 
     public Article getArticle() {
@@ -92,19 +99,19 @@ public class ArticleInstance {
 
         Article articleTemp = null;
 
-        if (articleList.size() > 0 && articleList.get(id - 1).getStatus() != 0) {
+        if (articleList.size() > id && articleList.get(id - 1).getStatus() != 0) {
 
             articleTemp = articleList.get(id - 1);
             article = articleTemp;
             Log.d(TAG, "get: xxxxxxx");
 
 
-            mlistener.onSuccess(100); //notice UI
+            mlistener.onSuccess(100,id); //notice UI
 
         } else {
             Log.d(TAG, "get: xxxxxyyyyyy" + id);
 
-            okHttpAgent.get("http://www.imooc.com/api/teacher?type=3&cid=" + id);
+            okHttpAgent.get("http://www.imooc.com/api/teacher?type=3&cid=" + id,id);
 
         }
 
@@ -115,9 +122,15 @@ public class ArticleInstance {
 
     public List<Article> getList(int start, int end) {
 
+           while (articleList.size()<end)
+            articleList.add(new Article());
+
+
+
         for (int id = start; id <= end; id++) {
 
-            okHttpAgent.response("http://www.imooc.com/api/teacher?type=3&cid=" + id);
+            okHttpAgent.response("http://www.imooc.com/api/teacher?type=3&cid=" + id,id);
+            Log.d(TAG, "getList: " + id);
 
         }
         return articleList;
@@ -128,7 +141,7 @@ public class ArticleInstance {
     public interface OnGetInstance {
 
 
-        void onSuccess(int code);
+        void onSuccess(int code,int sequence);
 
         void onFail(int code, String message);
 
@@ -148,11 +161,11 @@ public class ArticleInstance {
     @Override
     public String toString() {
 
-        String ret="";
+        String ret = "";
 
-        for (int i = 0; i < articleList.size(); i++) {
+        for (int i = 1; i <= articleList.size(); i++) {
 
-            ret=articleList.get(i).getTitle()+ret;
+            ret = i + articleList.get(i).getTitle() + "\n";
 
         }
 

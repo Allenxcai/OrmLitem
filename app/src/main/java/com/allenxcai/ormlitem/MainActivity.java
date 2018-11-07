@@ -13,6 +13,8 @@ import com.allenxcai.bean.Article;
 import com.allenxcai.biz.ArticleInstance;
 import com.allenxcai.util.DataUtil;
 import com.allenxcai.util.OkHttpAgent;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -31,11 +33,12 @@ public class MainActivity extends AppCompatActivity {
     Button btn_last, btn_favorite, btn_next;
     TextView tv_title, tv_author, tv_articleDetail, tv_myFavorite;
     ImageView iv_ads;
-    private static final String TAG = "MainActivity";
+    private static final String TAG            = "MainActivity";
+    public static final  String PATH_IMAGE_URI = "http://www.imooc.com/data/picasso/images/1.jpg";
 
     private ArticleInstance articleInstance;
-    private Article article;
-    private int curPage = 1;
+    private Article         article;
+    private int             curPage = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,14 +46,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initViews();
         initEvent();
-
-
         articleInstance = new ArticleInstance();
-        getArticle(curPage);
-
 
         articleInstance.getList(1, 30);
-        
+
+        getArticle(curPage);
+
         getAds();
 
 
@@ -60,18 +61,23 @@ public class MainActivity extends AppCompatActivity {
         articleInstance.setMlistener(new ArticleInstance.OnGetInstance.SimpleOnGetInstance() {
 
             @Override
-            public void onSuccess(int code) {
+            public void onSuccess(int code, final int sequence) {
 
                 if (code == 100) {
-
                     article = articleInstance.getArticle();
-                    onGetResult();
-                }
-                
-                if(code ==200)
-                {
 
-                    Log.d(TAG, "onSuccess: zzzzzz articleInstance size:"+articleInstance.getArticleList().size()+":"+articleInstance.toString());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            onGetResult();
+                        }
+                    });
+
+                }
+
+                if (code == 200) {
+
+                    Log.d(TAG, "\n onSuccess:" + ":" + articleInstance.getArticle().getAuthor());
                 }
 
 
@@ -89,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
         tv_articleDetail = findViewById(R.id.tv_articleDetail);
         tv_author = findViewById(R.id.tv_author);
         tv_myFavorite = findViewById(R.id.tv_myFavorite);
+        iv_ads = findViewById(R.id.iv_ads);
 
     }
 
@@ -140,6 +147,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getAds() {
+
+        //ImageView icon = new ImageView(MainActivity.this);
+        //使用下载:自动缓存到磁盘内存或者内存缓存
+        Picasso        picasso = Picasso.with(MainActivity.this);
+        RequestCreator request = picasso.load(PATH_IMAGE_URI);
+
+
+        //设置占位符图片
+        request.placeholder(R.mipmap.ic_launcher);
+
+        request.into(iv_ads);
 
     }
 

@@ -27,11 +27,11 @@ public class OkHttpAgent {
 
     private OkHttpClient mClient;
 
-    private String retStr;
-    public volatile int status;
-    public static int ErrFailed = 1;
-    public static int ErrPassed = 0;
-    public static int ErrUnknown = -1;
+    private         String retStr;
+    public volatile int    status;
+    public static   int    ErrFailed  = 1;
+    public static   int    ErrPassed  = 0;
+    public static   int    ErrUnknown = -1;
 
 
     public OkHttpAgent() {
@@ -39,7 +39,8 @@ public class OkHttpAgent {
     }
 
 
-    public String response(final String urlstr) {
+    public String response(final String urlstr,final int sequence) {
+
 
         status = ErrUnknown;
         Request.Builder builder = new Request.Builder();
@@ -65,14 +66,16 @@ public class OkHttpAgent {
                 Log.d(TAG, "onResponse() called with: call = [" + call + "], response = [" + response + "]");
                 status = ErrPassed;
                 int code = response.code();
-//                Headers headers = response.headers();
-//                String content = response.body().string();
-//                final StringBuilder buf = new StringBuilder();
-//                buf.append("code: " + code);
-//                buf.append("\nHeaders: \n" + headers);
-//                buf.append("\nbody: \n" + content);
+                //                Headers headers = response.headers();
+                //                String content = response.body().string();
+                //                final StringBuilder buf = new StringBuilder();
+                //                buf.append("code: " + code);
+                //                buf.append("\nHeaders: \n" + headers);
+                //                buf.append("\nbody: \n" + content);
                 retStr = DataUtil.decode(response.body().string());
-                mlistener.onSuccess(200, retStr);
+
+
+                mlistener.onSuccess(200, retStr,sequence);
 
 
             }
@@ -81,7 +84,7 @@ public class OkHttpAgent {
         return retStr;
     }
 
-    public String get(final String urlstr) {
+    public String get(final String urlstr,final int sequence) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         retStr = null;
         status = ErrUnknown;
@@ -101,7 +104,7 @@ public class OkHttpAgent {
 
                     if (response.isSuccessful()) {
                         retStr = DataUtil.decode(response.body().string());
-                        mlistener.onSuccess(100, retStr);
+                        mlistener.onSuccess(100, retStr,sequence);
                         status = ErrPassed;
                     } else {
                         status = ErrFailed;
@@ -119,30 +122,30 @@ public class OkHttpAgent {
 
 
     public void post(String url) {
-//        Request.Builder builder = new Request.Builder();
-//        builder.url(url);
-//        builder.post(RequestBody.create(MEDIA_TYPE_MARKDOWN, "Hello world github/linguist#1 **cool**, and #1!"));
-//        Request request = builder.build();
-//        Call call = mClient.newCall(request);
-//        call.enqueue(new Callback() {
-//            @Override
-//            public void onFailure(Call call, IOException e) {
-//
-//            }
-//
-//            @Override
-//            public void onResponse(Call call, Response response) throws IOException {
-//                if (response.isSuccessful()) {
-//                    final String content = response.body().string();
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            mContentTextView.setText(content);
-//                        }
-//                    });
-//                }
-//            }
-//        });
+        //        Request.Builder builder = new Request.Builder();
+        //        builder.url(url);
+        //        builder.post(RequestBody.create(MEDIA_TYPE_MARKDOWN, "Hello world github/linguist#1 **cool**, and #1!"));
+        //        Request request = builder.build();
+        //        Call call = mClient.newCall(request);
+        //        call.enqueue(new Callback() {
+        //            @Override
+        //            public void onFailure(Call call, IOException e) {
+        //
+        //            }
+        //
+        //            @Override
+        //            public void onResponse(Call call, Response response) throws IOException {
+        //                if (response.isSuccessful()) {
+        //                    final String content = response.body().string();
+        //                    runOnUiThread(new Runnable() {
+        //                        @Override
+        //                        public void run() {
+        //                            mContentTextView.setText(content);
+        //                        }
+        //                    });
+        //                }
+        //            }
+        //        });
 
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -160,12 +163,12 @@ public class OkHttpAgent {
                     Response response = call.execute();
                     if (response.isSuccessful()) {
                         final String string = response.body().string();
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                mContentTextView.setText(string);
-//                            }
-//                        });
+                        //                        runOnUiThread(new Runnable() {
+                        //                            @Override
+                        //                            public void run() {
+                        //                                mContentTextView.setText(string);
+                        //                            }
+                        //                        });
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -201,7 +204,7 @@ public class OkHttpAgent {
 
         void onStart();
 
-        void onSuccess(int code, String NetRawData);
+        void onSuccess(int code, String NetRawData,int sequence);
 
         void onFail(int code, String message);
 
